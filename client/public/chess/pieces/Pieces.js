@@ -2,8 +2,6 @@ class Piece {
   constructor(color) {
     if(constructor == Piece) throw new error("Abstract classes can't be instantiated.");
     this.color = color;
-    this.possible_moves = [];
-    this.visible_tiles = [];
   }
   get_color() { return this.color }
   set_color(color) { this.color = color }
@@ -12,8 +10,7 @@ class Piece {
   get_visible_tiles(r, c, board) { throw new error("Method 'get_visible_tiles(r, c, board)' must be implemented") }
 
   // Returns all the possible moves of a piece
-  calc_possible_moves(r, c, board) { throw new error("Method 'calc_possible_moves(r, c, board)' must be implemented") }
-  get_possible_moves() { return this.possible_moves }
+  get_possible_moves(r, c, board) { throw new error("Method 'calc_possible_moves(r, c, board)' must be implemented") }
   get_type() { throw new error("Method 'get_type()' must be implemented") }
 }
 
@@ -40,19 +37,21 @@ class Movement_piece extends Piece {
 }
 
 class King extends Piece {
-  constructor(color, board) {
+  constructor(color, board_length, board_width) {
     super(color);
     this.first_move = true;
     this.visible_tiles = [];
-    // Initialize board to 0
-    for(let i = 0; i < board.get_length(); i++) {
+    // Initialize visible tiles board to 0
+    for(let i = 0; i < board_length(); i++) {
       this.visible_tiles[i] = [];
-      for(let j = 0; j < board.get_width(); j++) {
+      for(let j = 0; j < board_width(); j++) {
         this.visible_tiles[i][j] = 0;
       }
     }
+  }
 
-    // Get all visible tiles from the opposite color pieces
+  // Get all visible tiles from the opposite color pieces
+  get_all_visible_tiles(board) {
     let visible_tiles = [];
     for(let i = 0; i < board.get_length(); i++) {
       for(let j = 0; j < board.get_width(); j++) {
@@ -64,8 +63,9 @@ class King extends Piece {
         }
       }
     }
+    return this.visible_tiles;
   }
-  
+
   get_visible_tiles(r, c, board_length, board_width) {
     let visible_tiles = [[r+1,c-1],[r+1,c],[r+1,c+1],[r,c+1],
       [r-1,c+1],[r-1,c],[r-1,c-1],[r,c-1]];
@@ -78,6 +78,45 @@ class King extends Piece {
       }
     }
     return return_tiles;
+  }
+
+  is_checked(r, c) { return (this.visible_tiles[r][c])? true : false }
+
+  get_possible_moves(r, c, board) {
+    let possible_moves = this.get_visible_tiles;
+    
+    // Check if visible tiles have pieces on them
+    let temp;
+    let temp_moves = [];
+    for(let i = 0; i < possible_moves.length; i++) {
+      temp = board.get_tile(possible_moves[i][0], possible_moves[i][1]);
+      if(temp == null || temp.get_color() != this.color) temp_moves.push(temp);
+    }
+    possible_moves = temp;
+    
+    // Check if can castle
+    if(this.get_first_move()) {
+      let col_offset = 0;
+      // Check castle left
+      while(c+col_offset > 0 && board.get_tile(r,c+col_offset) == null) col_offset--;
+      if(board.get_tile(r, c+col_offset) != null &&
+        board.get_tile(r, c+col_offset).get_type() == "rook" &&
+        board.get_tile(r, c+col_offset).get_first_move()) possible_moves.push([r,c-2]);
+      // Check castle right
+      col_offset = 0;
+      while(c+col_offset < board.get_length()-1 && board.get_tile(r,c+col_offset) == null) col_offset++;
+      if(board.get_tile(r, c+col_offset) != null &&
+        board.get_tile(r, c+col_offset).get_type() == "rook" &&
+        board.get_tile(r, c+col_offset).get_first_move()) possible_moves.push([r,c+2]);
+    }
+
+    // Check if possible moves causes a check
+    temp_moves = [];
+    for(let i = 0; i < possible_moves.length; i++) {
+      if(board.move_piece()) temp_moves.push(possible_moves[i]);
+    }
+
+    return temp_moves;
   }
 
   get_first_move() { return this.first_move }
