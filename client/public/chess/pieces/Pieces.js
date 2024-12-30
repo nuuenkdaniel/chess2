@@ -27,30 +27,6 @@ class Piece {
   get_piece() { throw new error("Method 'get_piece()' must be implemented") }
 }
 
-class Movement_piece extends Piece {
-  constructor(color) {
-    if(constructor == Pieces) throw new error("Abstract classes can't be instantiated.");
-    super(color);
-  }
-
-  get_possible_moves_helper(r, c, move_r, move_c, board) {
-    let i = 1;
-    let temp_r = r+i*move_r;
-    let temp_c = c+i*move_c;
-    let possible_moves = [];
-    // Keep moving in direction until stopped by piece or bounds
-    while((temp_r < board.get_height() && temp_r >= 0) && 
-      (temp_c < board.get_width() && temp_c >= 0)) {
-      if(board.get_tile(temp_r, temp_c) != null) {
-        if(board.get_tile(temp_r, temp_c).get_color != this.color) possible_moves.push([temp_r, temp_c]);
-        break;
-      }
-      possible_moves.push([temp_r, temp_c]);
-    }
-    return possible_moves;
-  }
-}
-
 class King extends Piece {
   constructor(color, board_length, board_width) {
     super(color);
@@ -81,14 +57,14 @@ class King extends Piece {
     return this.visible_tiles;
   }
 
-  get_visible_tiles(r, c, board_length, board_width) {
+  get_visible_tiles(r, c, board) {
     let visible_tiles = [[r+1,c-1],[r+1,c],[r+1,c+1],[r,c+1],
       [r-1,c+1],[r-1,c],[r-1,c-1],[r,c-1]];
     let return_tiles = [];
     // Check if tiles are out of bounds
     for(let i = 0; i < visible_tiles.length; i++) {
-      if(visible_tiles[i][0] < board_length && visible_tiles[i][0] >= 0 &&
-        visible_tiles[i][1] < board_width && visible_tiles[i][1] >= 0) {
+      if(visible_tiles[i][0] < board.get_length() && visible_tiles[i][0] >= 0 &&
+        visible_tiles[i][1] < board.get_width() && visible_tiles[i][1] >= 0) {
         return_tiles.push(visible_tiles[i]);
       }
     }
@@ -133,6 +109,7 @@ class King extends Piece {
 
   get_first_move() { return this.first_move }
   set_first_move(first_move) { this.first_move = first_move }
+  get_piece() { return "king" }
 }
 
 // Pawn Class
@@ -234,4 +211,128 @@ class Knight extends Piece {
   get_piece() { return "knight" }
 }
 
-module.exports = { Piece, Movement_piece, Pawn, Knight };
+class Movement_piece extends Piece {
+  constructor(color) {
+    if(constructor == Pieces) throw new error("Abstract classes can't be instantiated.");
+    super(color);
+  }
+
+  /**
+   * Assists with getting all visible tiles in one direction
+   * @param {int} r - current row of the piece
+   * @param {int} c - current column of the piece
+   * @param {int} move_r - the direction of the row the piece is moving in
+   * @param {int} move_c - the direction of the column the piece is moving in
+   * @returns {int[][]} - a 2d int array of the visible tiles in that direction
+   */
+  get_possible_moves_helper(r, c, move_r, move_c, board) {
+    let i = 1;
+    let temp_r = r+i*move_r;
+    let temp_c = c+i*move_c;
+    let possible_moves = [];
+    // Keep moving in direction until stopped by piece or bounds
+    while((temp_r < board.get_height() && temp_r >= 0) && 
+      (temp_c < board.get_width() && temp_c >= 0)) {
+      if(board.get_tile(temp_r, temp_c) != null) {
+        possible_moves.push([temp_r, temp_c]);
+        break;
+      }
+      possible_moves.push([temp_r, temp_c]);
+      i++;
+      temp_r = r+i*move_r;
+      temp_c = c+i*move_c;
+    }
+    return possible_moves;
+  }
+}
+
+class Rook extends Movement_piece {
+  constructor(color) {
+    super(color);
+    this.first_move = true;
+  }
+  
+  get_visible_tiles(r, c, board) {
+    let visible_tiles = [];
+    let move = [[1,0],[0,1],[-1,0],[0,-1]];
+    for(let i = 0; i < move.length; i++) visible_tiles.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
+    return visible_tiles;
+  }
+
+  get_possible_moves(r, c, board) {
+    let possible_moves = [];
+    let move = [[1,0],[0,1],[-1,0],[0,-1]];
+    for(let i = 0; i < move.length; i++) {
+      possible_moves.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
+      // Check if the last tile has a piece of the same color
+      if(possible_moves.length != 0 &&
+        board.get_tile(possible_moves[possible_moves.length-1][0], board.get_tile(possible_moves[possible_moves.length-1][1])) != null &&
+        possible_moves[possible_moves.length-1].get_color() == this.color) possible_moves.pop();
+    }
+    
+    // Check if possible moves causes a check before returning
+    return this.remove_check(possible_moves, board);
+  }
+
+  get_first_move() { return this.first_move }
+  set_first_move(first_move) { this.first_move = first_move }
+  get_piece() { return "rook" }
+}
+
+class Bishop extends Movement_piece {
+  constructor(color) { super(color) }
+
+  get_visible_tiles(r, c, board) {
+    let visible_tiles = [];
+    let move = [[1,1],[-1,1],[-1,-1],[1,-1]];
+    for(let i = 0; i < move.length; i++) visible_tiles.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
+    return visible_tiles;
+  }
+
+  get_possible_moves(r, c, board) {
+    let possible_moves = [];
+    let move = [[1,1],[-1,1],[-1,-1],[1,-1]];
+    for(let i = 0; i < move.length; i++) {
+      possible_moves.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
+      // Check if the last tile has a piece of the same color
+      if(possible_moves.length != 0 &&
+        board.get_tile(possible_moves[possible_moves.length-1][0], board.get_tile(possible_moves[possible_moves.length-1][1])) != null &&
+        possible_moves[possible_moves.length-1].get_color() == this.color) possible_moves.pop();
+    }
+    
+    // Check if possible moves causes a check before returning
+    return this.remove_check(possible_moves, board);
+  }
+
+  get_piece() { return "bishop" }
+}
+
+class Queen extends Movement_piece {
+  constructor(color) { super(color) }
+
+  get_visible_tiles(r, c, board) {
+    let visible_tiles = [];
+    let move = [[1,1],[-1,1],[-1,-1],[1,-1],[1,0],[0,1],[-1,0],[0,-1]];
+    for(let i = 0; i < move.length; i++) visible_tiles.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
+    return visible_tiles;
+  }
+
+  get_possible_moves(r, c, board) {
+    let possible_moves = [];
+    let move = [[1,1],[-1,1],[-1,-1],[1,-1],[1,0],[0,1],[-1,0],[0,-1]];
+    for(let i = 0; i < move.length; i++) {
+      possible_moves.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
+      // Check if the last tile has a piece of the same color
+      if(possible_moves.length != 0 &&
+        board.get_tile(possible_moves[possible_moves.length-1][0], board.get_tile(possible_moves[possible_moves.length-1][1])) != null &&
+        possible_moves[possible_moves.length-1].get_color() == this.color) possible_moves.pop();
+    }
+    
+    // Check if possible moves causes a check before returning
+    return this.remove_check(possible_moves, board);
+  }
+
+  get_piece() { return "queen" }
+}
+
+module.exports = { Piece, Pawn, Knight, Movement_piece };
