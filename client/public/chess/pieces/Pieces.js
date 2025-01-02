@@ -265,9 +265,11 @@ class Rook extends Movement_piece {
     for(let i = 0; i < move.length; i++) {
       possible_moves.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
       // Check if the last tile has a piece of the same color
+      let temp = board.get_tile(possible_moves[possible_moves.length-1][0],
+        possible_moves[possible_moves.length-1][1]);
       if(possible_moves.length != 0 &&
-        board.get_tile(possible_moves[possible_moves.length-1][0], board.get_tile(possible_moves[possible_moves.length-1][1])) != null &&
-        possible_moves[possible_moves.length-1].get_color() == this.color) possible_moves.pop();
+        temp != null &&
+        temp.get_color() == this.color) possible_moves.pop();
     }
     
     // Check if possible moves causes a check before returning
@@ -295,9 +297,11 @@ class Bishop extends Movement_piece {
     for(let i = 0; i < move.length; i++) {
       possible_moves.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
       // Check if the last tile has a piece of the same color
+      let temp = board.get_tile(possible_moves[possible_moves.length-1][0],
+        possible_moves[possible_moves.length-1][1]);
       if(possible_moves.length != 0 &&
-        board.get_tile(possible_moves[possible_moves.length-1][0], board.get_tile(possible_moves[possible_moves.length-1][1])) != null &&
-        possible_moves[possible_moves.length-1].get_color() == this.color) possible_moves.pop();
+        temp != null &&
+        temp.get_color() == this.color) possible_moves.pop();
     }
     
     // Check if possible moves causes a check before returning
@@ -323,9 +327,11 @@ class Queen extends Movement_piece {
     for(let i = 0; i < move.length; i++) {
       possible_moves.push(this.get_possible_moves_helper(r, c, move[i][0], move[i][1], board));
       // Check if the last tile has a piece of the same color
+      let temp = board.get_tile(possible_moves[possible_moves.length-1][0],
+        possible_moves[possible_moves.length-1][1]);
       if(possible_moves.length != 0 &&
-        board.get_tile(possible_moves[possible_moves.length-1][0], board.get_tile(possible_moves[possible_moves.length-1][1])) != null &&
-        possible_moves[possible_moves.length-1].get_color() == this.color) possible_moves.pop();
+        temp != null &&
+        temp.get_color() == this.color) possible_moves.pop();
     }
     
     // Check if possible moves causes a check before returning
@@ -335,4 +341,4 @@ class Queen extends Movement_piece {
   get_piece() { return "queen" }
 }
 
-module.exports = { Piece, Pawn, Knight, Movement_piece };
+module.exports = { Piece, Pawn, Knight, Movement_piece, Rook, Bishop, Queen };
