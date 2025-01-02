@@ -10,7 +10,17 @@ class Chess_board {
 
   get_tile(r, c) { return this.board[r][c] }
   set_tile(piece, r, c) { return this.board[r][c] = piece }
+  get_black_king() { return this.black_king }
+  get_white_king() { return this.white_king }
 
+  /**
+   * Returns the possible moves of the piece on the selected tile
+   * @param { int } r - row of the tile
+   * @param { int } c - column of the tile
+   * @returns { int[] } - An array of possible moves of the selected piece
+   */
+  get_possible_move(r, c) {}
+    
   /**
    * Creates an empty board
    */
@@ -53,4 +63,42 @@ class Chess_board {
     this.black_king = this.set_tile(new King("black", this.board_length, this.board_width), 0, 4);
     this.white_king = this.set_tile(new King("white", this.board_length, this.board_width), 7, 4);
   }
+
+  /** 
+   * Copies item from specified src tile to specified dest tile
+   * and set the source tile to null without making any checks
+   * @param { int } r_src - row of the source tile
+   * @param { int } c_src - column of the source tile
+   * @param { int } r_dest - row of the destination tile
+   * @param { int } c_dest - column of the destination tile
+   */
+  move(r_src, c_src, r_dest, c_dest) {
+    this.set_tile(this.get_tile(r_src, c_src), r_dest, r_dest);
+    this.set_tile(null, r_src, c_src);
+  }
+
+  /**
+   * Moves piece from specified src tile to specified dest tile
+   * while making sure it does not cause a check
+   * @param { int } r_src - row of the source tile
+   * @param { int } c_src - column of the source tile
+   * @param { int } r_dest - row of the destination tile
+   * @param { int } c_dest - column of the destination tile
+   * @returns { Bool } - true if piece was moved; false otherwise
+   */
+  move_piece(r_src, c_src, r_dest, c_dest) {}
+
+  /**
+   * Promotes piece of specified tile to specified piece
+   * @param { int } r - row of the tile
+   * @param { int } c - column of the tile
+   * @returns { Bool } - true if piece was promoted; false otherwise
+   */
+  promote(r, c, piece) {}
+
+  /**
+   * Checks whether checkmate occured
+   * returns { Bool } - true if checkmate; false otherwise
+   */
+  is_checkmate() {}
 }
