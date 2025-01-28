@@ -34,7 +34,6 @@ class Piece {
     board.set_tile(curr_piece, r_src, c_src);
     king.get_all_visible_tiles(board);
 
-
     return temp_moves;
   }
 
@@ -93,7 +92,7 @@ class King extends Piece {
   is_checked(r, c) { return (this.visible_tiles[r][c])? true : false }
 
   get_possible_moves(r, c, board) {
-    let possible_moves = this.get_visible_tiles;
+    let possible_moves = this.get_visible_tiles(r,c,board);
 
     // Check if visible tiles have pieces on them
     let temp;

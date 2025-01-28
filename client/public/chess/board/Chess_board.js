@@ -19,7 +19,7 @@ class Chess_board {
    * @param { int } c - column of the tile
    * @returns { int[] } - An array of possible moves of the selected piece
    */
-  get_possible_move(r, c) {}
+  get_possible_moves(r, c) { return this.get_tile(r,c).get_possible_moves(r,c,this) }
     
   /**
    * Creates an empty board
@@ -87,17 +87,52 @@ class Chess_board {
    * @returns { Bool } - true if piece was moved; false otherwise
    */
   move_piece(r_src, c_src, r_dest, c_dest) {
-    if(this.board[r_src][c_src] == null) return false;
+    let curr_piece = this.get_tile(r_src,c_src);
+
+    // Return if no piece exists on src tile
+    if(curr_piece == null) return false;
     
+    // Check if the move is possible
+    let possible_moves = curr_piece.get_possible_moves(r_src, c_src);
+    for(let move in possible_moves) {
+      if(move[0] == r_dest && move[1] == c_dest) {
+        this.move(r_src, c_src, r_dest, c_dest);
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
    * Promotes piece of specified tile to specified piece
    * @param { int } r - row of the tile
    * @param { int } c - column of the tile
+   * @param { string } piece_type - piece to promote to
    * @returns { Bool } - true if piece was promoted; false otherwise
    */
-  promote(r, c, piece) {}
+  promote(r, c, piece_type) {
+    piece_type = piece_type.toLowerCase();
+    let piece_color = this.get_tile(r, c).get_color();
+    let piece = null;
+    switch(piece_type) {
+      case "queen":
+        piece = new Queen(piece_color);
+        break;
+      case "rook":
+        piece = new Rook(piece_color);
+        break;
+      case "bishop":
+        piece = new Bishop(piece_color);
+        break;
+      case "knight":
+        piece = new Knight(piece_color);
+        break;
+      default:
+        return false;
+    }
+    this.set_tile(piece,r,c);
+    return true;
+  }
 
   /**
    * Checks whether checkmate occured
