@@ -7,15 +7,34 @@ class Piece {
   set_color(color) { this.color = color }
 
   /**
-   * @param {int[][]} possible_moves - possible_moves of the piece
-   * @returns {int[][]} - the possible_moves that won't cause the king to be checked
-   * @board {Chess_board} board - the chess board
+   * Removes all moves that cause check on the board
+   * @param { int } r_src - the current row the piece is on
+   * @param { int } c_src - the current column the piece is on
+   * @param { int[][] } possible_moves - possible_moves of the piece
+   * @returns { int[][] } - the possible_moves that won't cause the king to be checked
+   * @board { Chess_board } board - the chess board
    */
-  remove_check(possible_moves, board) {
+  remove_check(r_src, c_src, possible_moves, board) {
+    let curr_piece = board.get_tile(r_src, c_src);
+    board.set_tile(null, r_src, c_src);
     let temp_moves = [];
+    let temp_piece = null;
+    let king = (this.get_color() == "black")? board.get_white_king() : board.get_black_king;
     for(let i = 0; i < possible_moves.length; i++) {
-      if(board.move_piece()) temp_moves.push(possible_moves[i]);
+      // Save whatever was on the tile being replace
+      temp_piece = board.get_tile(possible_moves[i][0], possible_moves[i][1]);
+      board.set_tile(curr_piece, possible_moves[i][0], possible_moves[i][1]);
+      king.get_all_visible_tiles(board);
+      if(!king.is_checked()) temp_moves.push(possible_moves[i]);
+      // Place the removed piece back
+      board.set_tile(temp_piece, possible_moves[i][0], possible_moves[i][1]);
     }
+
+    // Return everything back
+    board.set_tile(curr_piece, r_src, c_src);
+    king.get_all_visible_tiles(board);
+
+
     return temp_moves;
   }
 
@@ -102,7 +121,7 @@ class King extends Piece {
     }
 
     // Check if possible moves causes a check
-    possible_moves = this.remove_check(possible_moves, board);
+    possible_moves = this.remove_check(r, c, possible_moves, board);
 
     return possible_moves;
   }
@@ -166,7 +185,7 @@ class Pawn extends Piece {
     }
 
     // Check if possible moves causes a check before returning
-    return this.remove_check(possible_moves, board);
+    return this.remove_check(r, c, possible_moves, board);
   }
 
   get_piece() { return "pawn" }
@@ -205,7 +224,7 @@ class Knight extends Piece {
     }
 
     // Check if possible moves causes check before returning
-    return this.remove_check(returned_moves, board);
+    return this.remove_check(r, c, returned_moves, board);
   }
 
   get_piece() { return "knight" }
@@ -273,7 +292,7 @@ class Rook extends Movement_piece {
     }
     
     // Check if possible moves causes a check before returning
-    return this.remove_check(possible_moves, board);
+    return this.remove_check(r, c, possible_moves, board);
   }
 
   get_first_move() { return this.first_move }
@@ -305,7 +324,7 @@ class Bishop extends Movement_piece {
     }
     
     // Check if possible moves causes a check before returning
-    return this.remove_check(possible_moves, board);
+    return this.remove_check(r, c, possible_moves, board);
   }
 
   get_piece() { return "bishop" }
@@ -335,7 +354,7 @@ class Queen extends Movement_piece {
     }
     
     // Check if possible moves causes a check before returning
-    return this.remove_check(possible_moves, board);
+    return this.remove_check(r, c, possible_moves, board);
   }
 
   get_piece() { return "queen" }

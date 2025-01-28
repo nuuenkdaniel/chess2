@@ -66,7 +66,7 @@ class Chess_board {
 
   /** 
    * Copies item from specified src tile to specified dest tile
-   * and set the source tile to null without making any checks
+   * and set the source tile to null and updating the king
    * @param { int } r_src - row of the source tile
    * @param { int } c_src - column of the source tile
    * @param { int } r_dest - row of the destination tile
@@ -86,7 +86,10 @@ class Chess_board {
    * @param { int } c_dest - column of the destination tile
    * @returns { Bool } - true if piece was moved; false otherwise
    */
-  move_piece(r_src, c_src, r_dest, c_dest) {}
+  move_piece(r_src, c_src, r_dest, c_dest) {
+    if(this.board[r_src][c_src] == null) return false;
+    
+  }
 
   /**
    * Promotes piece of specified tile to specified piece
